@@ -11,7 +11,9 @@ async def test_github_gist_success():
     async with httpx.AsyncClient() as client:
         platform = GitHubGistPlatform(client, github_token="token")
         respx.post(GITHUB_GISTS_URL).mock(
-            return_value=httpx.Response(201, json={"html_url": "https://gist.github.com/user/123"})
+            return_value=httpx.Response(
+                201, json={"html_url": "https://gist.github.com/user/123"}
+            )
         )
         result = await platform.post("Test message https://example.com")
         assert result.status == "success"
@@ -32,7 +34,9 @@ async def test_github_gist_missing_credentials():
 async def test_github_gist_http_error():
     async with httpx.AsyncClient() as client:
         platform = GitHubGistPlatform(client, github_token="token")
-        respx.post(GITHUB_GISTS_URL).mock(return_value=httpx.Response(403, text="Forbidden"))
+        respx.post(GITHUB_GISTS_URL).mock(
+            return_value=httpx.Response(403, text="Forbidden")
+        )
         result = await platform.post("Test message https://example.com")
         assert result.status == "failure"
         assert "HTTP error 403" in (result.error or "")

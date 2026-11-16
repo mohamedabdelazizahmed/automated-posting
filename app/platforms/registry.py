@@ -9,7 +9,9 @@ from app.platforms.pastebin import PastebinPlatform
 from app.platforms.telegram import TelegramPlatform
 
 
-def get_platforms(client: httpx.AsyncClient, settings: Settings) -> list[SocialPlatform]:
+def get_platforms(
+    client: httpx.AsyncClient, settings: Settings
+) -> list[SocialPlatform]:
     """Build and return the list of configured social platforms."""
     timeout = settings.request_timeout
     return [

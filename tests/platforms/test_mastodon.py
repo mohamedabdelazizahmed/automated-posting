@@ -9,10 +9,16 @@ from app.platforms.mastodon import MASTODON_STATUSES_URL_TEMPLATE, MastodonPlatf
 @respx.mock
 async def test_mastodon_success():
     async with httpx.AsyncClient() as client:
-        platform = MastodonPlatform(client, mastodon_base_url="https://mastodon.social", mastodon_access_token="token")
+        platform = MastodonPlatform(
+            client,
+            mastodon_base_url="https://mastodon.social",
+            mastodon_access_token="token",
+        )
         url = MASTODON_STATUSES_URL_TEMPLATE.format(base_url="https://mastodon.social")
         respx.post(url).mock(
-            return_value=httpx.Response(200, json={"url": "https://mastodon.social/@user/123"})
+            return_value=httpx.Response(
+                200, json={"url": "https://mastodon.social/@user/123"}
+            )
         )
         result = await platform.post("Test message https://example.com")
         assert result.status == "success"
@@ -22,7 +28,9 @@ async def test_mastodon_success():
 @pytest.mark.asyncio
 async def test_mastodon_missing_credentials():
     async with httpx.AsyncClient() as client:
-        platform = MastodonPlatform(client, mastodon_base_url="", mastodon_access_token="")
+        platform = MastodonPlatform(
+            client, mastodon_base_url="", mastodon_access_token=""
+        )
         result = await platform.post("Test message https://example.com")
         assert result.status == "failure"
         assert "Missing credentials" in (result.error or "")
@@ -32,7 +40,11 @@ async def test_mastodon_missing_credentials():
 @respx.mock
 async def test_mastodon_http_error():
     async with httpx.AsyncClient() as client:
-        platform = MastodonPlatform(client, mastodon_base_url="https://mastodon.social", mastodon_access_token="token")
+        platform = MastodonPlatform(
+            client,
+            mastodon_base_url="https://mastodon.social",
+            mastodon_access_token="token",
+        )
         url = MASTODON_STATUSES_URL_TEMPLATE.format(base_url="https://mastodon.social")
         respx.post(url).mock(return_value=httpx.Response(403, text="Forbidden"))
         result = await platform.post("Test message https://example.com")
@@ -44,7 +56,11 @@ async def test_mastodon_http_error():
 @respx.mock
 async def test_mastodon_timeout():
     async with httpx.AsyncClient() as client:
-        platform = MastodonPlatform(client, mastodon_base_url="https://mastodon.social", mastodon_access_token="token")
+        platform = MastodonPlatform(
+            client,
+            mastodon_base_url="https://mastodon.social",
+            mastodon_access_token="token",
+        )
         url = MASTODON_STATUSES_URL_TEMPLATE.format(base_url="https://mastodon.social")
         respx.post(url).mock(side_effect=httpx.TimeoutException("Timeout"))
         result = await platform.post("Test message https://example.com")

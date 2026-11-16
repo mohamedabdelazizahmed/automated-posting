@@ -34,13 +34,11 @@ class GitHubGistPlatform(SocialPlatform):
         payload = {
             "description": "Public post",
             "public": True,
-            "files": {
-                "post.md": {
-                    "content": message
-                }
-            }
+            "files": {"post.md": {"content": message}},
         }
-        response = await self.client.post(GITHUB_GISTS_URL, json=payload, headers=headers, timeout=self.timeout)
+        response = await self.client.post(
+            GITHUB_GISTS_URL, json=payload, headers=headers, timeout=self.timeout
+        )
         response.raise_for_status()
         data = response.json()
         return data["html_url"]

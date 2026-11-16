@@ -37,7 +37,9 @@ class MastodonPlatform(SocialPlatform):
             "status": message,
             "visibility": "public",
         }
-        response = await self.client.post(url, json=payload, headers=headers, timeout=self.timeout)
+        response = await self.client.post(
+            url, json=payload, headers=headers, timeout=self.timeout
+        )
         response.raise_for_status()
         data = response.json()
         return data["url"]

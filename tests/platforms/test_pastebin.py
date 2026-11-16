@@ -24,7 +24,9 @@ async def test_pastebin_bad_request_error():
     async with httpx.AsyncClient() as client:
         platform = PastebinPlatform(client, pastebin_api_dev_key="key")
         respx.post(PASTEBIN_API_URL).mock(
-            return_value=httpx.Response(200, text="Bad API request, invalid api_dev_key")
+            return_value=httpx.Response(
+                200, text="Bad API request, invalid api_dev_key"
+            )
         )
         result = await platform.post("Test message https://example.com")
         assert result.status == "failure"
@@ -45,7 +47,9 @@ async def test_pastebin_missing_credentials():
 async def test_pastebin_http_error():
     async with httpx.AsyncClient() as client:
         platform = PastebinPlatform(client, pastebin_api_dev_key="key")
-        respx.post(PASTEBIN_API_URL).mock(return_value=httpx.Response(403, text="Forbidden"))
+        respx.post(PASTEBIN_API_URL).mock(
+            return_value=httpx.Response(403, text="Forbidden")
+        )
         result = await platform.post("Test message https://example.com")
         assert result.status == "failure"
         assert "HTTP error 403" in (result.error or "")

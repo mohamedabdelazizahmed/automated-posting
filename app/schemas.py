@@ -1,55 +1,1 @@
-import re
-
-from pydantic import BaseModel, Field, HttpUrl, field_validator
-
-
-class PlatformResult(BaseModel):
-    """Result of posting to a single social platform."""
-
-    platform: str
-    status: str  # "success" or "failure"
-    posted_url: str | None = None
-    public_access: bool | None = None
-    date: str
-    time: str
-    error: str | None = None
-
-
-class PostResponse(BaseModel, arbitrary_types_allowed=True):
-    """Overall response containing results from all platforms."""
-
-    success: bool
-    results: list[PlatformResult]
-
-
-class PostRequest(BaseModel):
-    """Request payload for posting a message."""
-
-    message: str = Field(..., description="Message content to post, max 200 chars, exactly 1 URL.")
-
-    @field_validator("message")
-    @classmethod
-    def validate_message(cls, v: str) -> str:
-        """Validate message length and URL count/validity."""
-        if not v or not v.strip():
-            raise ValueError("Message cannot be empty.")
-        if len(v) > 200:
-            raise ValueError("Message must be at most 200 characters long.")
-
-        # Regex to find HTTP/HTTPS URLs
-        url_pattern = re.compile(r"https?://[^\s]+")
-        found_urls = url_pattern.findall(v)
-
-        if len(found_urls) == 0:
-            raise ValueError("Message must contain a URL.")
-        if len(found_urls) > 1:
-            raise ValueError("Message must contain exactly one URL, found multiple.")
-
-        # Validate URL using Pydantic HttpUrl
-        raw_url = found_urls[0]
-        try:
-            HttpUrl(raw_url)
-        except Exception as e:
-            raise ValueError(f"Invalid URL format: {raw_url}") from e
-
-        return v
+import refrom pydantic import BaseModel, Field, HttpUrl, field_validatorclass PlatformResult(BaseModel):    """Result of posting to a single social platform."""    platform: str    status: str    posted_url: str | None = None    public_access: bool | None = None    date: str    time: str    error: str | None = Noneclass PostResponse(BaseModel, arbitrary_types_allowed=True):    """Overall response containing results from all platforms."""    success: bool    results: list[PlatformResult]class PostRequest(BaseModel):    """Request payload for posting a message."""    message: str = Field(        ..., description="Message content to post, max 200 chars, exactly 1 URL."    )    @field_validator("message")    @classmethod    def validate_message(cls, v: str) -> str:        """Validate message length and URL count/validity."""        if not v or not v.strip():            raise ValueError("Message cannot be empty.")        if len(v) > 200:            raise ValueError("Message must be at most 200 characters long.")        url_pattern = re.compile(r"https?://[^\s]+")        found_urls = url_pattern.findall(v)        if len(found_urls) == 0:            raise ValueError("Message must contain a URL.")        if len(found_urls) > 1:            raise ValueError("Message must contain exactly one URL, found multiple.")        raw_url = found_urls[0]        try:            HttpUrl(raw_url)        except Exception as e:            raise ValueError(f"Invalid URL format: {raw_url}") from e        return v

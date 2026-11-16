@@ -32,7 +32,9 @@ async def test_devto_missing_credentials():
 async def test_devto_http_error():
     async with httpx.AsyncClient() as client:
         platform = DevToPlatform(client, devto_api_key="key")
-        respx.post(DEVTO_ARTICLES_URL).mock(return_value=httpx.Response(401, text="Unauthorized"))
+        respx.post(DEVTO_ARTICLES_URL).mock(
+            return_value=httpx.Response(401, text="Unauthorized")
+        )
         result = await platform.post("Test message https://example.com")
         assert result.status == "failure"
         assert "HTTP error 401" in (result.error or "")
@@ -43,7 +45,9 @@ async def test_devto_http_error():
 async def test_devto_timeout():
     async with httpx.AsyncClient() as client:
         platform = DevToPlatform(client, devto_api_key="key")
-        respx.post(DEVTO_ARTICLES_URL).mock(side_effect=httpx.TimeoutException("Timeout"))
+        respx.post(DEVTO_ARTICLES_URL).mock(
+            side_effect=httpx.TimeoutException("Timeout")
+        )
         result = await platform.post("Test message https://example.com")
         assert result.status == "failure"
         assert "Request timeout" in (result.error or "")

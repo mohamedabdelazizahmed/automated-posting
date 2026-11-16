@@ -30,7 +30,9 @@ class SocialPlatform(ABC):
 
     async def post(self, message: str) -> PlatformResult:
         """Publish a message using the template method pattern with unified error handling."""
-        missing = [attr for attr in self.required_credentials if not getattr(self, attr, None)]
+        missing = [
+            attr for attr in self.required_credentials if not getattr(self, attr, None)
+        ]
         if missing:
             return self.failure(f"Missing credentials: {', '.join(missing)}")
 
@@ -46,7 +48,9 @@ class SocialPlatform(ABC):
         except Exception as e:  # noqa: BLE001
             return self.failure(f"Publishing failed: {e}")
 
-    def success(self, posted_url: str | None = None, public_access: bool | None = None) -> PlatformResult:
+    def success(
+        self, posted_url: str | None = None, public_access: bool | None = None
+    ) -> PlatformResult:
         """Helper to construct a successful PlatformResult."""
         now = datetime.now()
         return PlatformResult(

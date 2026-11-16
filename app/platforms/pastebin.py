@@ -34,7 +34,9 @@ class PastebinPlatform(SocialPlatform):
             "api_paste_private": "0",
             "api_paste_name": "Public post",
         }
-        response = await self.client.post(PASTEBIN_API_URL, data=payload, timeout=self.timeout)
+        response = await self.client.post(
+            PASTEBIN_API_URL, data=payload, timeout=self.timeout
+        )
         response.raise_for_status()
         text = response.text.strip()
         if text.startswith("https://"):

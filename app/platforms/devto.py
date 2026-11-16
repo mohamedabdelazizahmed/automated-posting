@@ -36,7 +36,9 @@ class DevToPlatform(SocialPlatform):
                 "published": True,
             }
         }
-        response = await self.client.post(DEVTO_ARTICLES_URL, json=payload, headers=headers, timeout=self.timeout)
+        response = await self.client.post(
+            DEVTO_ARTICLES_URL, json=payload, headers=headers, timeout=self.timeout
+        )
         response.raise_for_status()
         data = response.json()
         return data["url"]
