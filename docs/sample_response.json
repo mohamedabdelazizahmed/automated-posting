@@ -1,0 +1,50 @@
+{
+  "success": true,
+  "results": [
+    {
+      "platform": "Telegram",
+      "status": "success",
+      "posted_url": "https://t.me/mychannel/123",
+      "public_access": true,
+      "date": "2026-11-16",
+      "time": "12:00:00",
+      "error": null
+    },
+    {
+      "platform": "Mastodon",
+      "status": "success",
+      "posted_url": "https://mastodon.social/@user/456",
+      "public_access": true,
+      "date": "2026-11-16",
+      "time": "12:00:00",
+      "error": null
+    },
+    {
+      "platform": "Dev.to",
+      "status": "success",
+      "posted_url": "https://dev.to/user/post-1",
+      "public_access": true,
+      "date": "2026-11-16",
+      "time": "12:00:00",
+      "error": null
+    },
+    {
+      "platform": "GitHub Gist",
+      "status": "success",
+      "posted_url": "https://gist.github.com/user/789",
+      "public_access": true,
+      "date": "2026-11-16",
+      "time": "12:00:00",
+      "error": null
+    },
+    {
+      "platform": "Pastebin",
+      "status": "success",
+      "posted_url": "https://pastebin.com/abc12345",
+      "public_access": true,
+      "date": "2026-11-16",
+      "time": "12:00:00",
+      "error": null
+    }
+  ]
+}
