@@ -1,5 +1,5 @@
 import httpx
-from fastapi import Request
+from fastapi import Depends, Request
 
 from app.config import Settings, get_settings
 from app.platforms.registry import get_platforms
@@ -13,11 +13,9 @@ def get_http_client(request: Request) -> httpx.AsyncClient:
 
 def get_posting_service(
     request: Request,
-    settings: Settings = None,
+    settings: Settings = Depends(get_settings),  # noqa: B008
 ) -> PostingService:
     """Dependency provider for PostingService with injected client and platforms."""
-    if settings is None:
-        settings = get_settings()
     client = get_http_client(request)
     platforms = get_platforms(client, settings)
     return PostingService(platforms)

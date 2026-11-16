@@ -1,14 +1,14 @@
 import httpx
 import pytest
+import respx
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
+from app.config import Settings, get_settings
 from app.main import app
 from app.platforms.base import SocialPlatform
 from app.schemas import PostRequest
 from app.services.posting_service import PostingService
-
-client = TestClient(app)
 
 
 def test_post_request_validation_valid():
@@ -114,8 +114,56 @@ async def test_posting_service_resilience():
     assert "Network timeout" in (exc_res.error or "")
 
 
+@respx.mock
+def test_e2e_posting_mixed_success_failure():
+    """Test POST /posting endpoint with 2 platforms succeeding and 3 failing."""
+    respx.post("https://api.telegram.org/bot_test_token/sendMessage").mock(
+        return_value=httpx.Response(200, json={"ok": True, "result": {"message_id": 100}})
+    )
+    respx.post("https://mastodon.social/api/v1/statuses").mock(
+        return_value=httpx.Response(200, json={"url": "https://mastodon.social/@user/500"})
+    )
+    respx.post("https://dev.to/api/articles").mock(
+        return_value=httpx.Response(401, text="Unauthorized")
+    )
+    respx.post("https://api.github.com/gists").mock(
+        side_effect=httpx.TimeoutException("Timeout")
+    )
+    respx.post("https://pastebin.com/api/api_post.php").mock(
+        return_value=httpx.Response(200, text="Bad API request")
+    )
+
+    def override_get_settings():
+        return Settings(
+            telegram_bot_token="_test_token",
+            telegram_channel="@channel",
+            mastodon_base_url="https://mastodon.social",
+            mastodon_access_token="mastodon_token",
+            devto_api_key="devto_key",
+            github_token="github_token",
+            pastebin_api_dev_key="pastebin_key",
+        )
+
+    app.dependency_overrides[get_settings] = override_get_settings
+    try:
+        with TestClient(app) as test_client:
+            response = test_client.post("/posting", json={"message": "Hello world https://example.com"})
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert len(data["results"]) == 5
+
+            success_count = sum(1 for r in data["results"] if r["status"] == "success")
+            failure_count = sum(1 for r in data["results"] if r["status"] == "failure")
+            assert success_count == 2
+            assert failure_count == 3
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_health_endpoint():
     """Test health check endpoint."""
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    with TestClient(app) as test_client:
+        response = test_client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
