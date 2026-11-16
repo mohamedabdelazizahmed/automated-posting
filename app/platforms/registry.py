@@ -1,4 +1,3 @@
-
 import httpx
 
 from app.config import Settings
@@ -12,10 +11,33 @@ from app.platforms.telegram import TelegramPlatform
 
 def get_platforms(client: httpx.AsyncClient, settings: Settings) -> list[SocialPlatform]:
     """Build and return the list of configured social platforms."""
+    timeout = settings.request_timeout
     return [
-        TelegramPlatform(client, bot_token=settings.telegram_bot_token, channel=settings.telegram_channel),
-        MastodonPlatform(client, base_url=settings.mastodon_base_url, access_token=settings.mastodon_access_token),
-        DevToPlatform(client, api_key=settings.devto_api_key),
-        GitHubGistPlatform(client, token=settings.github_token),
-        PastebinPlatform(client, api_dev_key=settings.pastebin_api_dev_key),
+        TelegramPlatform(
+            client,
+            telegram_bot_token=settings.telegram_bot_token,
+            telegram_channel=settings.telegram_channel,
+            timeout=timeout,
+        ),
+        MastodonPlatform(
+            client,
+            mastodon_base_url=settings.mastodon_base_url,
+            mastodon_access_token=settings.mastodon_access_token,
+            timeout=timeout,
+        ),
+        DevToPlatform(
+            client,
+            devto_api_key=settings.devto_api_key,
+            timeout=timeout,
+        ),
+        GitHubGistPlatform(
+            client,
+            github_token=settings.github_token,
+            timeout=timeout,
+        ),
+        PastebinPlatform(
+            client,
+            api_dev_key=settings.pastebin_api_dev_key,
+            timeout=timeout,
+        ),
     ]

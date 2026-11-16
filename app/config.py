@@ -1,4 +1,3 @@
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +11,7 @@ class Settings(BaseSettings):
     devto_api_key: str | None = None
     github_token: str | None = None
     pastebin_api_dev_key: str | None = None
+    request_timeout: float = 10.0
 
     model_config = SettingsConfigDict(
         env_file=".env",

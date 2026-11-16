@@ -1,10 +1,11 @@
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from app.main import app
 from app.platforms.base import SocialPlatform
-from app.schemas import PlatformResult, PostRequest
+from app.schemas import PostRequest
 from app.services.posting_service import PostingService
 
 client = TestClient(app)
@@ -50,8 +51,12 @@ class FakeSuccessPlatform(SocialPlatform):
     def name(self) -> str:
         return "FakeSuccess"
 
-    async def post(self, message: str) -> PlatformResult:
-        return self.success(posted_url="https://fakesuccess.com/post/1")
+    @property
+    def required_credentials(self) -> list[str]:
+        return []
+
+    async def _publish(self, message: str) -> str:
+        return "https://fakesuccess.com/post/1"
 
 
 class FakeFailurePlatform(SocialPlatform):
@@ -59,8 +64,14 @@ class FakeFailurePlatform(SocialPlatform):
     def name(self) -> str:
         return "FakeFailure"
 
-    async def post(self, message: str) -> PlatformResult:
-        return self.failure("API error")
+    @property
+    def required_credentials(self) -> list[str]:
+        return []
+
+    async def _publish(self, message: str) -> str:
+        request = httpx.Request("POST", "https://example.com")
+        response = httpx.Response(400, text="API error", request=request)
+        raise httpx.HTTPStatusError("API error", request=request, response=response)
 
 
 class FakeExceptionPlatform(SocialPlatform):
@@ -68,7 +79,11 @@ class FakeExceptionPlatform(SocialPlatform):
     def name(self) -> str:
         return "FakeException"
 
-    async def post(self, message: str) -> PlatformResult:
+    @property
+    def required_credentials(self) -> list[str]:
+        return []
+
+    async def _publish(self, message: str) -> str:
         raise RuntimeError("Network timeout")
 
 
@@ -92,11 +107,11 @@ async def test_posting_service_resilience():
 
     fail_res = next(r for r in response.results if r.platform == "FakeFailure")
     assert fail_res.status == "failure"
-    assert fail_res.error == "API error"
+    assert "HTTP error 400" in (fail_res.error or "")
 
     exc_res = next(r for r in response.results if r.platform == "FakeException")
     assert exc_res.status == "failure"
-    assert "Network timeout" in exc_res.error
+    assert "Network timeout" in (exc_res.error or "")
 
 
 def test_health_endpoint():
